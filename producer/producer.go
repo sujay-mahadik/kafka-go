@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"log"
 	"os"
@@ -14,9 +16,37 @@ import (
 )
 
 // KafkaConfig represents the Kafka configuration
+type SSLConfig struct {
+	Enabled  bool   `yaml:"enabled"`
+	CAFile   string `yaml:"caFile"`
+	CertFile string `yaml:"certFile"`
+	KeyFile  string `yaml:"keyFile"`
+}
+
 type KafkaConfig struct {
-	BrokerList string `yaml:"brokerList"`
-	Topic      string `yaml:"topic"`
+	BrokerList string    `yaml:"brokerList"`
+	Topic      string    `yaml:"topic"`
+	SSL        SSLConfig `yaml:"ssl"`
+}
+
+func newTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error) {
+	caCert, err := ioutil.ReadFile(caFile)
+	if err != nil {
+		return nil, err
+	}
+
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	return &tls.Config{
+		RootCAs:      caCertPool,
+		Certificates: []tls.Certificate{cert},
+	}, nil
 }
 
 func loadConfig(filename string) (*KafkaConfig, error) {
@@ -58,6 +88,15 @@ func main() {
 	configProducer.Producer.RequiredAcks = sarama.WaitForAll
 	configProducer.Producer.Retry.Max = 5
 	configProducer.Producer.Return.Successes = true
+
+	// Configure the Kafka producer with SSL
+	if config.SSL.Enabled {
+		configProducer.Net.TLS.Enable = true
+		configProducer.Net.TLS.Config, err = newTLSConfig(config.SSL.CAFile, config.SSL.CertFile, config.SSL.KeyFile)
+		if err != nil {
+			log.Fatalf("Error configuring TLS: %v", err)
+		}
+	}
 
 	// Create a new Kafka producer
 	producer, err := sarama.NewSyncProducer(strings.Split(config.BrokerList, ","), configProducer)

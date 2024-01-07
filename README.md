@@ -20,16 +20,37 @@ Both the producer and consumer rely on configuration files in YAML format. The Y
     
 ```
 brokerList: "localhost:9092"
+
+# SSL Configuration
+ssl:
+  enabled: true
+  caFile: "path/to/ca.pem"
+  certFile: "path/to/client.pem"
+  keyFile: "path/to/client.key"
 ```
 - brokerList: The comma-separated list of Kafka broker addresses.
+- ssl.enabled: Set to true to enable SSL.
+- ssl.caFile: Path to the Certificate Authority (CA) file.
+- ssl.certFile: Path to the client certificate file.
+- ssl.keyFile: Path to the client private key file.
 
 ### Consumer Configuration (consumer_config.yaml)
     
 ```
 brokerList: "localhost:9092"
+
+# SSL Configuration
+ssl:
+  enabled: true
+  caFile: "path/to/ca.pem"
+  certFile: "path/to/client.pem"
+  keyFile: "path/to/client.key"
 ```
 - brokerList: The comma-separated list of Kafka broker addresses.
-
+- ssl.enabled: Set to true to enable SSL.
+- ssl.caFile: Path to the Certificate Authority (CA) file.
+- ssl.certFile: Path to the client certificate file.
+- ssl.keyFile: Path to the client private key file.
 
 ## Build Steps
 

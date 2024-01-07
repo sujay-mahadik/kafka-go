@@ -1,1 +1,11 @@
 brokerList: "localhost:9092"
+
+# SSL Configuration
+ssl:
+  enabled: false
+  caFile: "path/to/ca.pem"
+  certFile: "path/to/client.pem"
+  keyFile: "path/to/client.key"
+
+# Consumer Group Configuration
+consumerGroup: "your_consumer_group"
