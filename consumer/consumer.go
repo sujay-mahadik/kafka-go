@@ -1,26 +1,59 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
 
+	"io/ioutil"
+
 	"github.com/IBM/sarama"
+	"gopkg.in/yaml.v2"
 )
 
-const (
-	brokerList = "localhost:9092"    // Replace with your Kafka broker address
-	topic      = "quickstart-events" // Replace with your Kafka topic
-)
+// KafkaConfig represents the Kafka configuration
+type KafkaConfig struct {
+	BrokerList string `yaml:"brokerList"`
+}
+
+func loadConfig(filename string) (*KafkaConfig, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var config KafkaConfig
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
 
 func main() {
+	// Parse command-line arguments
+	topicPtr := flag.String("topic", "", "Kafka topic to subscribe to")
+	flag.Parse()
+
+	// Check if the topic flag is provided
+	if *topicPtr == "" {
+		log.Fatal("Please provide a Kafka topic using the -topic flag")
+	}
+
+	// Load Kafka configuration from the YAML file
+	config, err := loadConfig("consumer_config.yaml")
+	if err != nil {
+		log.Fatalf("Error loading Kafka configuration: %v", err)
+	}
+
 	// Configure the Kafka consumer
-	config := sarama.NewConfig()
-	config.Consumer.Return.Errors = true
+	configConsumer := sarama.NewConfig()
+	configConsumer.Consumer.Return.Errors = true
 
 	// Create a new Kafka consumer
-	consumer, err := sarama.NewConsumer(strings.Split(brokerList, ","), config)
+	consumer, err := sarama.NewConsumer(strings.Split(config.BrokerList, ","), configConsumer)
 	if err != nil {
 		log.Fatalf("Error creating Kafka consumer: %v", err)
 	}
@@ -30,8 +63,8 @@ func main() {
 		}
 	}()
 
-	// Subscribe to the Kafka topic
-	partitionConsumer, err := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
+	// Subscribe to the specified Kafka topic
+	partitionConsumer, err := consumer.ConsumePartition(*topicPtr, 0, sarama.OffsetNewest)
 	if err != nil {
 		log.Fatalf("Error subscribing to Kafka topic: %v", err)
 	}
