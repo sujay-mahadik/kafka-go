@@ -69,3 +69,24 @@ To run the Kafka consumer, use the following command:
 ```bash
 ./consumer -topic topic_name
 ```
+- -topic: The topic name to sent message to
+
+## Help
+
+To get help run
+
+
+```bash
+
+./producer -help
+Usage of producer:
+  -message string
+        Message to produce to Kafka (default "Hello, Kafka!")
+  -topic string
+        Kafka topic to produce to
+
+./consumer -help
+Usage of consumer:
+  -topic string
+        Kafka topic to subscribe to
+```
