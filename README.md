@@ -2,6 +2,8 @@
 
 This repository provides a simple example of a Kafka producer and consumer implemented in Go, using the Sarama library. The producer sends messages to a specified Kafka topic, and the consumer subscribes to the same topic to receive and log the messages.
 
+![kafka-go-snippet](https://github.com/sujay-mahadik/kafka-go/assets/20441076/beff8e83-e641-42d6-b8b6-6cebff09120a)
+
 ## Requirements
 
 - Go installed on your machine.
